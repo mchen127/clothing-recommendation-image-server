@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  image-server:
+    image: python:3.9
+    container_name: clothing-recommendation-image-server
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "8086:8086"
+    env_file:
+      - .env
+    command: bash -c "pip install -r requirements.txt && python app.py"
