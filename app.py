@@ -16,6 +16,7 @@ DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 BASE_URL = os.getenv("BASE_URL")
+ACCESS_SECRET = os.getenv('ACCESS_SECRET')
 
 
 # Helper function to get MIME type from filename
@@ -126,6 +127,13 @@ def get_image(image_id):
         return send_file(io.BytesIO(image_data), mimetype=mime_type)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.before_request
+def check_secret():
+    auth_header = request.headers.get("Authorization")
+    if auth_header != f"Bearer {ACCESS_SECRET}":
+        return jsonify({"error": "Unauthorized"}), 401
 
 
 @app.route("/")
