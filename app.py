@@ -15,6 +15,7 @@ DB_PORT = os.getenv("DB_PORT")
 DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
+BASE_URL = os.getenv("BASE_URL")
 
 
 # Helper function to get MIME type from filename
@@ -80,7 +81,7 @@ def upload_image():
         conn.close()
 
         # Construct the URL to access the image
-        image_url = f"https://140.112.107.70:8086/image/{image_id}"
+        image_url = f"{BASE_URL}/image/{image_id}"
         return (
             jsonify(
                 {
