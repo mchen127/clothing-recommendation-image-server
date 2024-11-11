@@ -43,6 +43,10 @@ def get_mime_type(filename):
 # Endpoint to insert an image into the database
 @app.route("/upload", methods=["POST"])
 def upload_image():
+    allowed_ips = ["209.74.64.166"]
+    if request.remote_addr not in allowed_ips:
+        return jsonify({"error": "Unauthorized"}), 403
+
     if "file" not in request.files:
         return jsonify({"error": "No file provided"}), 400
 
@@ -129,11 +133,11 @@ def get_image(image_id):
         return jsonify({"error": str(e)}), 500
 
 
-@app.before_request
-def check_secret():
-    auth_header = request.headers.get("Authorization")
-    if auth_header != f"Bearer {ACCESS_SECRET}":
-        return jsonify({"error": "Unauthorized"}), 401
+# @app.before_request
+# def check_secret():
+#     auth_header = request.headers.get("Authorization")
+#     if auth_header != f"Bearer {ACCESS_SECRET}":
+#         return jsonify({"error": "Unauthorized"}), 401
 
 
 @app.route("/")
