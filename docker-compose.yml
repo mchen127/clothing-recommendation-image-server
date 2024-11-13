@@ -3,7 +3,7 @@ services:
   image-server:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     ports:
       - "5000:5000"
     env_file:

@@ -16,8 +16,8 @@ DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 BASE_URL = os.getenv("BASE_URL")
+ALLOWED_ORIGIN = os.getenv("ALLOWED_ORIGIN")
 ACCESS_SECRET = os.getenv('ACCESS_SECRET')
-ALLOWED_ORIGIN = "https://clothing.rfjmm.com"
 
 
 @app.before_request
@@ -149,4 +149,4 @@ def home():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8086)
+    app.run(host="0.0.0.0", port=5000)
