@@ -17,6 +17,13 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 BASE_URL = os.getenv("BASE_URL")
 ACCESS_SECRET = os.getenv('ACCESS_SECRET')
+ALLOWED_ORIGIN = "https://clothing.rfjmm.com"
+
+
+@app.before_request
+def limit_methods():
+    if request.method == "POST" and request.origin != ALLOWED_ORIGIN:
+        return jsonify({"error": "Unauthorized"}), 403
 
 
 # Helper function to get MIME type from filename
@@ -43,10 +50,6 @@ def get_mime_type(filename):
 # Endpoint to insert an image into the database
 @app.route("/upload", methods=["POST"])
 def upload_image():
-    allowed_ips = ["209.74.64.166"]
-    if request.remote_addr not in allowed_ips:
-        return jsonify({"error": "Unauthorized"}), 403
-
     if "file" not in request.files:
         return jsonify({"error": "No file provided"}), 400
 
