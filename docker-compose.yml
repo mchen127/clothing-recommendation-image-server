@@ -1,13 +1,11 @@
-version: '3.8'
+version: '3.9'
 services:
   image-server:
-    image: python:3.9
-    container_name: clothing-recommendation-image-server
-    working_dir: /app
-    volumes:
-      - .:/app
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "8086:8086"
+      - "5000:5000"
     env_file:
       - .env
-    command: bash -c "pip install -r requirements.txt && python app.py"
+    restart: always
