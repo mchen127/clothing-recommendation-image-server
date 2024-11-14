@@ -1,4 +1,5 @@
 from flask import Flask, request, send_file, jsonify
+from flask_cors import CORS
 from dotenv import load_dotenv
 import psycopg2
 import os
@@ -8,6 +9,9 @@ import io
 load_dotenv()
 
 app = Flask(__name__)
+# CORS(app)  # Allow all origins by default
+
+CORS(app, resources={r"/*": {"origins": "https://clothing.rfjmm.com"}})
 
 # Database connection details from environment variables
 DB_HOST = os.getenv("DB_HOST")
@@ -50,16 +54,22 @@ def get_mime_type(filename):
 # Endpoint to insert an image into the database
 @app.route("/upload", methods=["POST"])
 def upload_image():
-    filename = request.args.get("filename")  # Get filename from query params
-    if not filename:
-        return jsonify({"error": "Filename is required"}), 400
+    # Check if the request contains a file
+    if "file" not in request.files:
+        return jsonify({"error": "No file part in the request"}), 400
 
+    file = request.files["file"]  # Retrieve the file from the request
+    if file.filename == "":
+        return jsonify({"error": "No file selected"}), 400
+
+    filename = file.filename  # Get the original filename
     mime_type = get_mime_type(filename)
-    if mime_type is None:
+
+    if not mime_type:
         return jsonify({"error": "Unsupported file type"}), 400
 
-    # Read the binary data directly
-    image_data = request.data
+    # Read the file data as binary
+    image_data = file.read()
 
     try:
         # Connect to the database
@@ -72,12 +82,12 @@ def upload_image():
         )
         cur = conn.cursor()
 
-        # Insert image into database
+        # Insert image into the database
         cur.execute(
             """
             INSERT INTO images (image_name, image_data, mime_type)
             VALUES (%s, %s, %s) RETURNING id
-        """,
+            """,
             (filename, psycopg2.Binary(image_data), mime_type),
         )
 
