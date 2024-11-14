@@ -17,7 +17,7 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 BASE_URL = os.getenv("BASE_URL")
 ALLOWED_ORIGIN = os.getenv("ALLOWED_ORIGIN")
-ACCESS_SECRET = os.getenv('ACCESS_SECRET')
+ACCESS_SECRET = os.getenv("ACCESS_SECRET")
 
 
 @app.before_request
@@ -50,18 +50,16 @@ def get_mime_type(filename):
 # Endpoint to insert an image into the database
 @app.route("/upload", methods=["POST"])
 def upload_image():
-    if "file" not in request.files:
-        return jsonify({"error": "No file provided"}), 400
+    filename = request.args.get("filename")  # Get filename from query params
+    if not filename:
+        return jsonify({"error": "Filename is required"}), 400
 
-    file = request.files["file"]
-    filename = file.filename
     mime_type = get_mime_type(filename)
-    print(filename, mime_type)
     if mime_type is None:
         return jsonify({"error": "Unsupported file type"}), 400
 
-    # Read file data
-    image_data = file.read()
+    # Read the binary data directly
+    image_data = request.data
 
     try:
         # Connect to the database
