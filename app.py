@@ -106,7 +106,7 @@ def upload_image():
 
 
 # Endpoint to retrieve an image by ID
-@app.route("/image/<int:image_id>", methods=["GET"])
+@app.route("/<int:image_id>", methods=["GET"])
 def get_image(image_id):
     try:
         # Connect to the database
