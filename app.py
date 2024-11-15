@@ -9,9 +9,9 @@ import io
 load_dotenv()
 
 app = Flask(__name__)
-# CORS(app)  # Allow all origins by default
 
-CORS(app, resources={r"/*": {"origins": "https://clothing.rfjmm.com"}})
+# Allow GET requests from any origin
+CORS(app, resources={r"/<string:image_id>": {"methods": ["GET"], "origins": "*"}})
 
 # Database connection details from environment variables
 DB_HOST = os.getenv("DB_HOST")
@@ -26,29 +26,32 @@ ACCESS_SECRET = os.getenv("ACCESS_SECRET")
 
 @app.before_request
 def limit_methods():
-    if request.method == "POST" and request.origin != ALLOWED_ORIGIN:
-        return jsonify({"error": "Unauthorized"}), 403
+    # Restrict POST requests to a specific origin and validate ACCESS_SECRET
+    if request.method == "POST":
+        origin = request.headers.get("Origin")
+        auth_header = request.headers.get("Authorization")
+
+        if origin != ALLOWED_ORIGIN:
+            return jsonify({"error": "Unauthorized: Invalid origin"}), 403
+
+        if auth_header != f"Bearer {ACCESS_SECRET}":
+            return jsonify({"error": "Unauthorized: Invalid access token"}), 401
 
 
 # Helper function to get MIME type from filename
 def get_mime_type(filename):
     extension = os.path.splitext(filename)[1].lower()
-    if extension == ".png":
-        return "image/png"
-    elif extension in [".jpg", ".jpeg"]:
-        return "image/jpeg"
-    elif extension == ".gif":
-        return "image/gif"
-    elif extension == ".webp":
-        return "image/webp"
-    elif extension == ".bmp":
-        return "image/bmp"
-    elif extension == ".tiff":
-        return "image/tiff"
-    elif extension == ".avif":
-        return "image/avif"
-    else:
-        return None
+    mime_types = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".gif": "image/gif",
+        ".webp": "image/webp",
+        ".bmp": "image/bmp",
+        ".tiff": "image/tiff",
+        ".avif": "image/avif",
+    }
+    return mime_types.get(extension)
 
 
 # Endpoint to insert an image into the database
@@ -58,11 +61,11 @@ def upload_image():
     if "file" not in request.files:
         return jsonify({"error": "No file part in the request"}), 400
 
-    file = request.files["file"]  # Retrieve the file from the request
+    file = request.files["file"]
     if file.filename == "":
         return jsonify({"error": "No file selected"}), 400
 
-    filename = file.filename  # Get the original filename
+    filename = file.filename
     mime_type = get_mime_type(filename)
 
     if not mime_type:
@@ -97,7 +100,7 @@ def upload_image():
         conn.close()
 
         # Construct the URL to access the image
-        image_url = f"{BASE_URL}/image/{image_id}"
+        image_url = f"{BASE_URL}/{image_id}"
         return (
             jsonify(
                 {
@@ -114,7 +117,7 @@ def upload_image():
 
 
 # Endpoint to retrieve an image by ID
-@app.route("/<int:image_id>", methods=["GET"])
+@app.route("/<string:image_id>", methods=["GET"])
 def get_image(image_id):
     try:
         # Connect to the database
@@ -142,13 +145,6 @@ def get_image(image_id):
         return send_file(io.BytesIO(image_data), mimetype=mime_type)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-# @app.before_request
-# def check_secret():
-#     auth_header = request.headers.get("Authorization")
-#     if auth_header != f"Bearer {ACCESS_SECRET}":
-#         return jsonify({"error": "Unauthorized"}), 401
 
 
 @app.route("/")
