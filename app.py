@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import psycopg2
 import os
 import io
+import logging
 
 # Load environment variables
 load_dotenv()
@@ -23,10 +24,23 @@ BASE_URL = os.getenv("BASE_URL")
 ALLOWED_ORIGIN = os.getenv("ALLOWED_ORIGIN")
 ACCESS_SECRET = os.getenv("ACCESS_SECRET")
 
+# Enable logging
+app.logger.setLevel(logging.DEBUG)
+
+
+@app.before_request
+def log_request_info():
+    """Log request headers and body for debugging."""
+    app.logger.debug("Headers: %s", request.headers)
+    app.logger.debug("Content-Type: %s", request.content_type)
+    if request.content_type and "multipart/form-data" not in request.content_type:
+        app.logger.warning("Request does not contain 'multipart/form-data'")
+    app.logger.debug("Body: %s", request.get_data(as_text=True))
+
 
 @app.before_request
 def limit_methods():
-    # Restrict POST requests to a specific origin and validate ACCESS_SECRET
+    """Restrict POST requests to a specific origin and validate ACCESS_SECRET."""
     if request.method == "POST":
         origin = request.headers.get("Origin")
         auth_header = request.headers.get("Authorization")
@@ -57,6 +71,7 @@ def get_mime_type(filename):
 # Endpoint to insert an image into the database
 @app.route("/upload", methods=["POST"])
 def upload_image():
+    """Upload an image and store it in the database."""
     # Check if the request contains a file
     if "file" not in request.files:
         return jsonify({"error": "No file part in the request"}), 400
@@ -113,12 +128,14 @@ def upload_image():
         )
 
     except Exception as e:
+        app.logger.error("Database error: %s", str(e))
         return jsonify({"error": str(e)}), 500
 
 
 # Endpoint to retrieve an image by ID
 @app.route("/<string:image_id>", methods=["GET"])
 def get_image(image_id):
+    """Retrieve an image by its ID."""
     try:
         # Connect to the database
         conn = psycopg2.connect(
@@ -144,11 +161,13 @@ def get_image(image_id):
         image_data, mime_type = result
         return send_file(io.BytesIO(image_data), mimetype=mime_type)
     except Exception as e:
+        app.logger.error("Database error: %s", str(e))
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/")
 def home():
+    """Home endpoint."""
     return "Hello, World!"
 
 
