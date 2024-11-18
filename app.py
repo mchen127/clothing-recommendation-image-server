@@ -35,7 +35,7 @@ def log_request_info():
     app.logger.debug("Content-Type: %s", request.content_type)
     if request.content_type and "multipart/form-data" not in request.content_type:
         app.logger.warning("Request does not contain 'multipart/form-data'")
-    app.logger.debug("Body: %s", request.get_data(as_text=True))
+    # app.logger.debug("Body: %s", request.get_data(as_text=True))
 
 
 @app.before_request
