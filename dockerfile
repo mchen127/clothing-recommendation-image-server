@@ -8,11 +8,17 @@ WORKDIR /
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install Gunicorn
+RUN pip install gunicorn
+
 # Copy application source code
 COPY . .
 
 # Expose the port
 EXPOSE 5000
 
-# Start the Flask server
-CMD ["python", "app.py"]
+# # Start the Flask server
+# CMD ["python", "app.py"]
+
+# Start the Gunicorn server
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]  # Update to use Gunicorn
