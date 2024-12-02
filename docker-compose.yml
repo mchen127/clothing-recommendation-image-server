@@ -5,6 +5,9 @@ services:
       context: .
       dockerfile: dockerfile
     container_name: image-server
+    networks:
+      default:
+        name: my_app_network
     ports:
       - "5000:5000"
     env_file:
