@@ -13,3 +13,7 @@ services:
       - .env
     restart: always
     command: gunicorn --bind 0.0.0.0:5000 "app:create_app()"
+
+networks:
+  my_app_network:
+    external: true  # Use the shared external network
