@@ -10,4 +10,4 @@ services:
     env_file:
       - .env
     restart: always
-    command: gunicorn --bind 0.0.0.0:5000 app:app  # Update to use Gunicorn
+    command: gunicorn --bind 0.0.0.0:5000 "app:create_app()"

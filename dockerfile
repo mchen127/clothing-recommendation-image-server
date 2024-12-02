@@ -17,8 +17,5 @@ COPY . .
 # Expose the port
 EXPOSE 5000
 
-# # Start the Flask server
-# CMD ["python", "app.py"]
-
 # Start the Gunicorn server
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]  # Update to use Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:create_app()"]
