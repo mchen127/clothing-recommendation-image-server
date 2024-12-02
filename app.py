@@ -42,17 +42,17 @@ def create_app():
         if request.content_type and "multipart/form-data" not in request.content_type:
             app.logger.warning("Request does not contain 'multipart/form-data'")
         # Restrict POST requests to specific origin and validate ACCESS_SECRET
-        if request.method == "POST":
-            origin = request.headers.get("Origin")
-            auth_header = request.headers.get("Authorization")
+        # if request.method == "POST":
+        #     origin = request.headers.get("Origin")
+        #     auth_header = request.headers.get("Authorization")
 
-            if origin != os.getenv("ALLOWED_ORIGIN"):
-                app.logger.warning("Unauthorized origin: %s", origin)
-                return jsonify({"error": "Unauthorized: Invalid origin"}), 403
+        #     if origin != os.getenv("ALLOWED_ORIGIN"):
+        #         app.logger.warning("Unauthorized origin: %s", origin)
+        #         return jsonify({"error": "Unauthorized: Invalid origin"}), 403
 
-            if auth_header != f"Bearer {os.getenv('ACCESS_SECRET')}":
-                app.logger.warning("Unauthorized access token")
-                return jsonify({"error": "Unauthorized: Invalid access token"}), 401
+        #     if auth_header != f"Bearer {os.getenv('ACCESS_SECRET')}":
+        #         app.logger.warning("Unauthorized access token")
+        #         return jsonify({"error": "Unauthorized: Invalid access token"}), 401
 
     @app.teardown_appcontext
     def close_db_pool(exception):
