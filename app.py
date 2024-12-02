@@ -32,7 +32,7 @@ ACCESS_SECRET = os.getenv("ACCESS_SECRET")
 app.logger.setLevel(logging.DEBUG)
 
 
-@app.before_first_request
+@app.on_event("startup")
 def setup_db_connection_pool():
     """Initialize the database connection pool when the app starts."""
     global db_pool
@@ -52,13 +52,30 @@ def setup_db_connection_pool():
         app.logger.error("Error creating database connection pool: %s", str(e))
 
 
-@app.teardown_appcontext
-def close_db_pool(exception):
+@app.on_event("shutdown")
+def close_db_pool():
     """Close the database connection pool when the app context ends."""
     global db_pool
     if db_pool:
         db_pool.closeall()
         app.logger.info("Database connection pool closed.")
+
+
+def get_db_connection():
+    """Get a database connection from the pool."""
+    try:
+        return db_pool.getconn()
+    except Exception as e:
+        app.logger.error("Error getting connection from pool: %s", str(e))
+        raise
+
+
+def release_db_connection(conn):
+    """Release a database connection back to the pool."""
+    try:
+        db_pool.putconn(conn)
+    except Exception as e:
+        app.logger.error("Error releasing connection back to pool: %s", str(e))
 
 
 @app.before_request
